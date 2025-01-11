@@ -68,14 +68,6 @@ The application integrates Socket.IO for real-time communication.
 1. Ensure both the backend and client servers are running.
 2. Open your browser and navigate to `http://localhost:3001` to access the chat application.
 
-## License
-
-This project is licensed under the MIT License.
-
-## Contributing
-
-Contributions are welcome! Please open an issue or submit a pull request.
-
 ## Contact
 
 For any inquiries, please contact [osememen.ogbe@example.com].
