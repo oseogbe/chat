@@ -32,7 +32,7 @@ The application integrates Socket.IO for real-time communication.
 
 3. Create a `.env` file in the `backend` directory and add your environment variables:
         ```
-        PORT=5000
+        PORT=3000
         DATABASE_URL=your_database_url
         ```
 
@@ -55,7 +55,7 @@ The application integrates Socket.IO for real-time communication.
 
 3. Create a `.env.local` file in the `client` directory and add your environment variables:
         ```
-        NEXT_PUBLIC_API_URL=http://localhost:5000
+        NEXT_PUBLIC_API_URL=http://localhost:3000
         ```
 
 4. Start the Next.js development server:
