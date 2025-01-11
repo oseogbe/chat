@@ -70,4 +70,4 @@ The application integrates Socket.IO for real-time communication.
 
 ## Contact
 
-For any inquiries, please contact [osememen.ogbe@example.com].
+For any inquiries, please contact [osememen.ogbe@gmail.com].
