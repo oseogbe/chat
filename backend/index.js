@@ -1,14 +1,16 @@
 const express = require("express");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
+const bodyParser = require("body-parser");
 const cors = require("cors");
-const dotenv = require("dotenv");
 const { prisma } = require("./lib/prisma");
-
+const dotenv = require("dotenv");
 dotenv.config();
+const authRoute = require("./routes/v1/auth.route");
 
 const app = express();
 
+app.use(bodyParser.json());
 app.use(cors());
 
 const server = createServer(app);
@@ -24,6 +26,15 @@ const port = process.env.PORT || 3001;
 
 app.get("/", (req, res) => {
   res.send("Welcome to Chat");
+});
+
+app.use("/api/v1/auth", authRoute);
+
+app.all("*", (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "resource not found",
+  });
 });
 
 io.on("connection", (socket) => {

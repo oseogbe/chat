@@ -18,7 +18,7 @@ model User {
   name           String?
   email          String?   @unique
   emailVerified  DateTime?
-  phoneNumber    String
+  phoneNumber    String    @unique
   image          String?
   hashedPassword String?
   createdAt      DateTime  @default(now())
