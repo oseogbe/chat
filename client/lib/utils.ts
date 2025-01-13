@@ -6,4 +6,13 @@ function getInitials(name: string) {
         .substring(0, 2);
 }
 
-export { getInitials };
+function getHourAndMinute(date: string) {
+    return new Date(date).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true
+    });
+    // new Date(message.createdAt!).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+}
+
+export { getInitials, getHourAndMinute };

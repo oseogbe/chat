@@ -1,9 +1,10 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useSession } from "next-auth/react";
-import { getInitials } from '@/lib/utils';
+import axios from 'axios';
+
+import { getHourAndMinute, getInitials } from '@/lib/utils';
 import { Contact, Message } from '@/typings';
 
 interface ContactDetailsProps {
@@ -62,9 +63,9 @@ const ChatListItem: React.FC<ContactDetailsProps> = ({ onSelectContact }) => {
                                 {lastMessages[contact.id]?.content || "No messages yet"}
                             </p>
                         </div>
-                        <div className="w-12 flex flex-col items-end">
+                        <div className="w-16 flex flex-col items-end">
                             <div className="text-xs text-[#707991] mb-1">
-                                {lastMessages[contact.id]?.createdAt ? new Date(lastMessages[contact.id].createdAt).toLocaleTimeString() : ""}
+                                {lastMessages[contact.id]?.createdAt ? getHourAndMinute(lastMessages[contact.id]!.createdAt!) : ""}
                             </div>
                             <div className="w-[18px] h-[18px] bg-[#3758F9] flex items-center justify-center text-xs text-white rounded-full">0</div>
                         </div>
