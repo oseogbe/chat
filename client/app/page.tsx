@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 
 import Topbar from '@/components/chat/Topbar';
@@ -10,15 +10,27 @@ import ChatInput from '@/components/chat/ChatInput';
 import ChatMessages from '@/components/chat/ChatMessages';
 
 import { Contact } from '@/typings';
+import { io, Socket } from 'socket.io-client';
+
+let socket: Socket;
 
 const Home = () => {
   const { data: session } = useSession();
   const [isContactDetailsMenuOpen, setContactDetailsMenuOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact>();
+  const [newMessage, setNewMessage] = useState<string>("");
 
-  if (!session) {
-    return null;
-  }
+  useEffect(() => {
+    if (!session) return;
+
+    socket = io(process.env.NEXT_PUBLIC_API_URL);
+
+    socket.emit("join", session.user.id);
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [session]);
 
   const openContactDetailsMenu = () => {
     setContactDetailsMenuOpen(true);
@@ -32,6 +44,10 @@ const Home = () => {
     setSelectedContact(contact);
   };
 
+  const handleMessageSent = (message: string) => {
+    setNewMessage(message);
+  };
+
   return (
     <div className='h-screen flex flex-1'>
       <ChatMenu onSelectContact={handleSelectContact} />
@@ -42,9 +58,12 @@ const Home = () => {
           <div className='relative flex flex-col flex-1'>
             <Topbar onClick={openContactDetailsMenu} contactName={selectedContact?.name} />
             <div className='relative bg-[#f5f5f5] flex-1 pb-24 overflow-y-auto scrollbar-hide'>
-              <ChatMessages />
+              <ChatMessages contact={selectedContact} newMessage={newMessage} />
             </div>
-            <ChatInput />
+            <ChatInput
+              contact={selectedContact}
+              onSendMessage={handleMessageSent}
+            />
           </div>
         )
       }
