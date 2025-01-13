@@ -10,14 +10,23 @@ class ChatRequestController {
         where: {
           senderId,
           receiverId,
-          status: "PENDING",
+          status: {
+            in: ["PENDING", "ACCEPTED"],
+          },
         },
       });
 
-      if (existingRequest) {
+      if (existingRequest.status === "PENDING") {
         return res.status(400).json({
           success: false,
           message: "A pending chat request already exists.",
+        });
+      }
+
+      if (existingRequest.status === "ACCEPTED") {
+        return res.status(400).json({
+          success: false,
+          message: "Contact has already been added.",
         });
       }
 
