@@ -3,7 +3,7 @@ const prisma = new PrismaClient();
 
 class MessageController {
   async sendMessage(req, res) {
-    const senderId = req.user.id;
+    const senderId = req.user.userId;
     const { receiverId, content } = req.body;
 
     try {
@@ -28,7 +28,7 @@ class MessageController {
   }
 
   async fetchMessages(req, res) {
-    const userId = req.user.id;
+    const userId = req.user.userId;
     const { chatUserId } = req.query;
 
     try {

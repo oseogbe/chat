@@ -2,7 +2,7 @@ const { prisma } = require("../../lib/prisma");
 
 class ChatRequestController {
   async sendChatRequest(req, res) {
-    const senderId = req.user.id;
+    const senderId = req.user.userId;
     const { receiverId } = req.body;
 
     try {
@@ -21,7 +21,7 @@ class ChatRequestController {
         });
       }
 
-      const chatRequest = await prisma.chatRequest.create({
+      await prisma.chatRequest.create({
         data: {
           senderId,
           receiverId,
@@ -30,7 +30,7 @@ class ChatRequestController {
 
       return res.status(201).json({
         success: true,
-        data: chatRequest,
+        message: "Chat request sent!",
       });
     } catch (error) {
       return res.status(500).json({
