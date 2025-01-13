@@ -1,26 +1,24 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useSession } from "next-auth/react";
+import axios from 'axios';
 import toast from 'react-hot-toast';
+
 import { XIcon } from "lucide-react";
+
+import { Contact } from '@/typings';
 
 interface ChatRequestModalProps {
     isOpen: boolean;
     onClose: () => void;
 }
 
-interface User {
-    id: string;
-    name: string;
-}
-
 const ChatRequestModal: React.FC<ChatRequestModalProps> = ({ isOpen, onClose }) => {
     const { data: session } = useSession();
     const [searchQuery, setSearchQuery] = useState('');
-    const [users, setUsers] = useState<User[]>([]);
-    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [users, setUsers] = useState<Contact[]>([]);
+    const [selectedUser, setSelectedUser] = useState<Contact | null>(null);
 
     useEffect(() => {
         if (searchQuery) {
