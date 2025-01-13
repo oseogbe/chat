@@ -1,6 +1,14 @@
+// client/app/api/auth/[...nextauth]/route.ts
+
 import axios from "axios";
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+
+type UserType = {
+    id: string;
+    email: string;
+    token: string;
+}
 
 const providers = [
     CredentialsProvider({
@@ -9,14 +17,18 @@ const providers = [
             email: { label: "Email", type: "email" },
             password: { label: "Password", type: "password" }
         },
-        async authorize(credentials) {
+        async authorize(credentials: Record<"email" | "password", string> | undefined): Promise<UserType | null> {
             const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/login`, {
                 email: credentials?.email,
                 password: credentials?.password,
             });
 
             if (res.data.token) {
-                return { id: res.data.userId, email: credentials?.email };
+                return {
+                    id: res.data.userId,
+                    email: credentials?.email as string,
+                    token: res.data.token
+                };
             }
 
             return null;
@@ -28,7 +40,14 @@ declare module "next-auth" {
     interface Session {
         user: {
             id: string;
+            token: string;
         };
+    }
+
+    interface User {
+        id: string;
+        email: string;
+        token: string;
     }
 }
 
@@ -45,12 +64,14 @@ export const OPTIONS: NextAuthOptions = {
         async jwt({ token, user }) {
             if (user) {
                 token.id = user.id;
+                token.token = user.token;
             }
             return token;
         },
         async session({ session, token }) {
             if (token?.id && session.user) {
                 session.user.id = token.id as string;
+                session.user.token = token.token as string;
             }
             return session;
         }
