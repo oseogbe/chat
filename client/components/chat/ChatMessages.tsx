@@ -1,4 +1,70 @@
-const ChatMessages = () => {
+"use client"
+
+import React, { useState, useEffect } from "react";
+import { Socket, io } from "socket.io-client";
+import { useSession } from 'next-auth/react';
+
+import { Contact, Message } from "@/typings";
+import { getHourAndMinute } from "@/lib/utils";
+
+let socket: Socket;
+
+interface ChatMessagesProps {
+    contact: Contact
+    newMessage: string
+}
+
+const ChatMessages: React.FC<ChatMessagesProps> = ({ contact, newMessage }) => {
+    const { data: session } = useSession();
+    const [messages, setMessages] = useState<Message[]>([]);
+
+    useEffect(() => {
+        if (!session) return;
+
+        socket = io(process.env.NEXT_PUBLIC_API_URL);
+
+        socket.emit("join", session.user.id);
+
+        socket.on("receive_message", (message: Message) => {
+            setMessages((prevMessages) => [...prevMessages, message]);
+        });
+
+        return () => {
+            socket.disconnect();
+        };
+    }, [session]);
+
+    useEffect(() => {
+        const fetchMessages = async () => {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/message/fetch?chatUserId=${contact.id}`, {
+                headers: {
+                    Authorization: `Bearer ${session?.user?.token}`,
+                },
+            });
+            const data = await response.json();
+            if (data.success) {
+                setMessages(data.messages);
+            }
+        };
+
+        fetchMessages();
+    }, [contact, session]);
+
+    useEffect(() => {
+        if (newMessage) {
+            setMessages((prevMessages) => [
+                ...prevMessages,
+                {
+                    id: Date.now().toString(),
+                    senderId: session?.user?.id as string,
+                    receiverId: contact.id,
+                    content: newMessage,
+                    createdAt: new Date().toISOString(),
+                },
+            ]);
+        }
+    }, [newMessage, contact.id, session?.user?.id]);
+
     return (
         <div className="h-full mx-20 flex flex-col-reverse overflow-y-auto scrollbar-hide">
             <div>
@@ -6,40 +72,21 @@ const ChatMessages = () => {
                     Today
                 </div>
                 <ul className="space-y-5">
-                    <li className="max-w-lg flex gap-x-2 sm:gap-x-4">
-                        <div className="bg-white border border-gray-200 rounded-2xl p-4 space-y-3">
-                            <p className="text-sm text-[#011627]">
-                                OMG do you remember what you did last night at the work night out?
-                            </p>
-                            <div className="flex justify-end mt-1">
-                                <time className="text-xs text-[#011627]">12:45</time>
-                            </div>
-                        </div>
-                    </li>
-                    <li className="max-w-lg ms-auto mt-1 gap-x-2 sm:gap-x-4">
-                        <div className="grow text-end space-y-3">
-                            <div className="inline-block bg-[#DEE9FF] rounded-2xl p-4 shadow-sm">
+                    {messages.map((message) => (
+                        <li
+                            key={message.id}
+                            className={`max-w-lg ${message.senderId === session?.user?.id ? 'ms-auto' : 'flex gap-x-2 sm:gap-x-4'}`}
+                        >
+                            <div className={`${message.senderId === session?.user?.id ? 'bg-[#DEE9FF]' : 'bg-white border border-gray-200'} rounded-2xl p-4 space-y-3`}>
                                 <p className="text-sm text-[#011627]">
-                                    no haha
+                                    {message.content}
                                 </p>
                                 <div className="flex justify-end mt-1">
-                                    <time className="text-xs text-[#011627]">12:48</time>
+                                    <time className="text-xs text-[#011627]">{getHourAndMinute(message.createdAt!)}</time>
                                 </div>
                             </div>
-                        </div>
-                    </li>
-                    <li className="max-w-lg ms-auto flex justify-end gap-x-2 sm:gap-x-4">
-                        <div className="grow text-end space-y-3">
-                            <div className="inline-block bg-[#DEE9FF] rounded-2xl p-4 shadow-sm">
-                                <p className="text-sm text-[#011627]">
-                                    i don't remember anything
-                                </p>
-                                <div className="flex justify-end mt-1">
-                                    <time className="text-xs text-[#011627]">12:50</time>
-                                </div>
-                            </div>
-                        </div>
-                    </li>
+                        </li>
+                    ))}
                 </ul>
             </div>
         </div>
