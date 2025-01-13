@@ -7,8 +7,12 @@ type Contact = {
 }
 
 type Message = {
+    id: string;
+    senderId: string;
+    receiverId: string;
     content: string;
-    createdAt: string;
+    isRead?: boolean;
+    createdAt?: string;
 }
 
 export { Contact, Message }
