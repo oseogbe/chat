@@ -16,11 +16,53 @@ datasource db {
 model User {
   id             String    @id @default(auto()) @map("_id") @db.ObjectId
   name           String?
-  email          String?   @unique
+  email          String    @unique
   emailVerified  DateTime?
   phoneNumber    String    @unique
   image          String?
   hashedPassword String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
+
+  sentMessages         Message[]     @relation("SentMessages")
+  receivedMessages     Message[]     @relation("ReceivedMessages")
+  sentChatRequests     ChatRequest[] @relation("SentChatRequests")
+  receivedChatRequests ChatRequest[] @relation("ReceivedChatRequests")
+}
+
+model ChatRequest {
+  id         String            @id @default(auto()) @map("_id") @db.ObjectId
+  senderId   String            @db.ObjectId
+  receiverId String            @db.ObjectId
+  status     ChatRequestStatus @default(PENDING)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  sender   User @relation("SentChatRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedChatRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId]) // ensure only one request between two users at a time
+  @@index([senderId])
+  @@index([receiverId])
+}
+
+enum ChatRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model Message {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  senderId   String   @db.ObjectId
+  receiverId String   @db.ObjectId
+  content    String
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  // deleting a User would cascade and remove all their Messages
+  sender   User @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([senderId, receiverId])
 }
