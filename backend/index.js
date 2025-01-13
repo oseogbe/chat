@@ -6,7 +6,11 @@ const cors = require("cors");
 const { prisma } = require("./lib/prisma");
 const dotenv = require("dotenv");
 dotenv.config();
+
 const authRoute = require("./routes/v1/auth.route");
+const userRoute = require("./routes/v1/user.route");
+const chatRequestRoute = require("./routes/v1/chat-request.route");
+const messageRoute = require("./routes/v1/message.route");
 
 const app = express();
 
@@ -29,6 +33,9 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/v1/auth", authRoute);
+app.use("/api/v1/user", userRoute);
+app.use("/api/v1/chat-request", chatRequestRoute);
+app.use("/api/v1/message", messageRoute);
 
 app.all("*", (req, res) => {
   res.status(404).json({
