@@ -44,14 +44,50 @@ app.all("*", (req, res) => {
   });
 });
 
+const users = new Map(); // Store active users and their socket IDs
+
 io.on("connection", (socket) => {
   // log when a user connects
   console.log(`user ${socket.id} connected`);
 
-  // listen for incoming messages
-  socket.on("message", (msg) => {
-    // broadcast message to all connected clients
-    io.emit("message", msg);
+  // Handle user joining with their userId
+  socket.on("join", (userId) => {
+    users.set(userId, socket.id); // Map userId to socketId
+    console.log(`${userId} joined with socket ID ${socket.id}`);
+  });
+
+  // Handle sending a message to a specific user
+  socket.on("private_message", async ({ senderId, receiverId, message }) => {
+    const receiverSocketId = users.get(receiverId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("receive_message", { senderId, message });
+
+      // Save message to database
+      const savedMessage = await prisma.message.create({
+        data: {
+          senderId,
+          receiverId,
+          content: message,
+        },
+      });
+
+      console.log(
+        `Message from ${senderId} to ${receiverId}: ${savedMessage.content}`
+      );
+    } else {
+      console.log(`User ${receiverId} is not connected.`);
+    }
+  });
+
+  // Handle user disconnecting
+  socket.on("disconnect", () => {
+    for (const [userId, socketId] of users.entries()) {
+      if (socketId === socket.id) {
+        users.delete(userId); // Remove user from active users
+        console.log(`${userId} disconnected.`);
+        break;
+      }
+    }
   });
 });
 
