@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import Topbar from '@/components/chat/Topbar';
 import ChatMenu from '@/components/chat/ChatMenu';
 import ContactDetailsMenu from '@/components/chat/ContactDetailsMenu';
@@ -16,12 +16,6 @@ const Home = () => {
     return null;
   }
 
-  const handleLogout = () => {
-    signOut({
-      callbackUrl: '/sign-in',
-    });
-  };
-
   const openContactDetailsMenu = () => {
     setContactDetailsMenuOpen(true);
   };
@@ -33,21 +27,14 @@ const Home = () => {
   return (
     <div className='h-screen flex flex-1'>
       <ChatMenu />
-      <div className='flex flex-col flex-1'>
+      <div className='relative flex flex-col flex-1'>
         <Topbar onClick={openContactDetailsMenu} />
-        <div className='relative flex flex-col flex-1 bg-[#f5f5f5]'>
+        <div className='relative bg-[#f5f5f5] flex-1 pb-24 overflow-y-auto scrollbar-hide'>
           <ChatMessages />
-          <ChatInput />
         </div>
+        <ChatInput />
       </div>
       <ContactDetailsMenu isOpen={isContactDetailsMenuOpen} onClose={closeContactDetailsMenu} />
-      {/* <h1>Welcome to Chat</h1>
-      <div>User #{session.user?.id}</div>
-      <div className='mt-4'>
-        <button className='bg-[#6E80A4] rounded-md px-12 py-3 text-white font-medium' onClick={handleLogout}>
-          Logout
-        </button>
-      </div> */}
     </div>
   )
 }
