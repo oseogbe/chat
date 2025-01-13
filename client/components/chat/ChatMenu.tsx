@@ -1,11 +1,19 @@
 "use client"
 
+import { useState } from 'react';
 import Image from "next/image";
 import { signOut } from "next-auth/react";
 import ChatListItem from "./ChatListItem";
-import { Search, LogOut } from "lucide-react";
+import { Search, LogOut, UserPlus } from "lucide-react";
+import ChatRequestModal from './ChatRequestModal';
 
 const ChatMenu = () => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const toggleModal = () => {
+        setIsModalOpen(!isModalOpen);
+    };
+
     const handleLogout = () => {
         signOut({
             callbackUrl: '/sign-in',
@@ -14,13 +22,15 @@ const ChatMenu = () => {
 
     return (
         <div className='flex flex-col gap-y-4 w-[380px] border-r border-[#D9DCE0] shadow-sm relative'>
-            <div className="flex items-center h-[70px] px-4">
+            <div className="flex items-center justify-between h-[70px] px-4">
                 <Image
                     src="/img/chat-logo.svg"
                     width={100}
                     height={100}
                     alt='chat logo'
                 />
+                <UserPlus size={20} className='cursor-pointer' onClick={toggleModal} />
+                <ChatRequestModal isOpen={isModalOpen} onClose={toggleModal} />
             </div>
             <div className="relative px-4">
                 <Search className="absolute top-2.5 left-7 h-5 w-5 text-[#707991]" />
