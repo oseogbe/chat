@@ -6,7 +6,7 @@ const messageController = new MessageController();
 
 const router = express.Router();
 
-router.post("/send", authenticate, messageController.sendMessage);
+router.post("/save", authenticate, messageController.saveMessage);
 router.get("/fetch", authenticate, messageController.fetchMessages);
 
 module.exports = router;

@@ -2,9 +2,8 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 class MessageController {
-  async sendMessage(req, res) {
-    const senderId = req.user.userId;
-    const { receiverId, content } = req.body;
+  async saveMessage(req, res) {
+    const { senderId, receiverId, content } = req.body;
 
     try {
       const message = await prisma.message.create({
