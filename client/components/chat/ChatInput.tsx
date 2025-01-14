@@ -37,15 +37,6 @@ const ChatInput: React.FC<ChatInputProps> = ({ contact, onSendMessage }) => {
                 message: newMessage,
             });
 
-            // onSendMessage(
-            //     {
-            //         id: Date.now().toString(),
-            //         senderId: session?.user?.id as string,
-            //         receiverId: contact.id,
-            //         content: newMessage,
-            //     },
-            // );
-
             // Add the message locally
             onSendMessage(newMessage);
 
