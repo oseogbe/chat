@@ -54,6 +54,9 @@ io.on("connection", (socket) => {
   socket.on("join", (userId) => {
     users.set(userId, socket.id); // Map userId to socketId
     console.log(`${userId} joined with socket ID ${socket.id}`);
+
+    // Broadcast the user_connected event to all other users
+    socket.broadcast.emit("user_connected", userId);
   });
 
   // Handle sending a message to a specific user
@@ -85,6 +88,9 @@ io.on("connection", (socket) => {
       if (socketId === socket.id) {
         users.delete(userId); // Remove user from active users
         console.log(`${userId} disconnected.`);
+
+        // Broadcast the user_disconnected event to all other users
+        socket.broadcast.emit("user_disconnected", userId);
         break;
       }
     }

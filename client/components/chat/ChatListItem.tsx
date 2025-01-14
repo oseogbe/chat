@@ -3,9 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { useSession } from "next-auth/react";
 import axios from 'axios';
+import { io, Socket } from 'socket.io-client';
 
 import { getHourAndMinute, getInitials } from '@/lib/utils';
 import { Contact, Message } from '@/typings';
+
+let socket: Socket;
 
 interface ContactDetailsProps {
     onSelectContact: (contact: Contact) => void;
@@ -15,6 +18,7 @@ const ChatListItem: React.FC<ContactDetailsProps> = ({ onSelectContact }) => {
     const { data: session } = useSession();
     const [contacts, setContacts] = useState<Contact[]>([]);
     const [lastMessages, setLastMessages] = useState<{ [key: string]: Message }>({});
+    const [connectedUsers, setConnectedUsers] = useState<Set<string>>(new Set());
 
     useEffect(() => {
         if (session) {
@@ -25,7 +29,6 @@ const ChatListItem: React.FC<ContactDetailsProps> = ({ onSelectContact }) => {
             })
                 .then(response => {
                     setContacts(response.data.data);
-                    // TODO: replace with websockets for real-time updates
                     response.data.data.forEach((contact: Contact) => {
                         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/message/fetch?chatUserId=${contact.id}`, {
                             headers: {
@@ -48,12 +51,38 @@ const ChatListItem: React.FC<ContactDetailsProps> = ({ onSelectContact }) => {
         }
     }, [session]);
 
+    useEffect(() => {
+        socket = io(process.env.NEXT_PUBLIC_API_URL);
+
+        // Listen for connected users
+        socket.on("user_connected", (userId) => {
+            setConnectedUsers((prev) => new Set([...prev, userId]));
+        });
+
+        // Listen for disconnected users
+        socket.on("user_disconnected", (userId) => {
+            setConnectedUsers((prev) => {
+                const newSet = new Set(prev);
+                newSet.delete(userId);
+                return newSet;
+            });
+        });
+
+        // Clean up the socket connection on component unmount
+        return () => {
+            socket.disconnect();
+        };
+    }, [session]);
+
     return (
         <div>
             {contacts.map(contact => (
                 <div key={contact.id} className="flex items-center gap-4 py-3 px-4 hover:bg-[#F5F5F5] cursor-pointer" onClick={() => onSelectContact(contact)}>
                     <div className="relative flex items-center justify-center w-12 h-12 rounded-full bg-[#6E80A4] text-white font-medium uppercase">
-                        <div className="w-3 h-3 rounded-full bg-[#15CF74] absolute top-0 right-0"></div>
+                        {/* green badge to show a contact is online */}
+                        {connectedUsers.has(contact.id) && (
+                            <div className="w-3 h-3 rounded-full bg-[#15CF74] absolute top-0 right-0"></div>
+                        )}
                         {getInitials(contact.name)}
                     </div>
                     <div className="flex flex-1 items-center justify-between">
