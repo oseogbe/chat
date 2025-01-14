@@ -34,9 +34,10 @@ The application integrates Socket.IO for real-time communication.
         ```
         PORT=3001
         DATABASE_URL=your_database_url
+           JWT_SECRET=your_jwt_secret
         ```
 
-4. Start the backend server:
+5. Start the backend server:
         ```bash
         npm start
         ```
