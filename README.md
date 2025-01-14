@@ -34,7 +34,7 @@ The application integrates Socket.IO for real-time communication.
         ```
         PORT=3001
         DATABASE_URL=your_database_url
-           JWT_SECRET=your_jwt_secret
+        JWT_SECRET=your_jwt_secret
         ```
 
 5. Start the backend server:
@@ -57,9 +57,10 @@ The application integrates Socket.IO for real-time communication.
 3. Create a `.env.local` file in the `client` directory and add your environment variables:
         ```
         NEXT_PUBLIC_API_URL=http://localhost:3001
+        NEXTAUTH_SECRET=your_nextauth_secret
         ```
 
-4. Start the Next.js development server:
+5. Start the Next.js development server:
         ```bash
         npm run dev
         ```
@@ -67,7 +68,7 @@ The application integrates Socket.IO for real-time communication.
 ### Running the Application
 
 1. Ensure both the backend and client servers are running.
-2. Open your browser and navigate to `http://localhost:3001` to access the chat application.
+2. Open your browser and navigate to `http://localhost:3000` to access the chat application.
 
 ## Contact
 
