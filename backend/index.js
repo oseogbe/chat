@@ -63,7 +63,13 @@ io.on("connection", (socket) => {
   socket.on("private_message", async ({ senderId, receiverId, message }) => {
     const receiverSocketId = users.get(receiverId);
     if (receiverSocketId) {
-      io.to(receiverSocketId).emit("receive_message", { senderId, message });
+      io.to(receiverSocketId).emit("receive_message", {
+        id: Date.now().toString(),
+        receiverId,
+        senderId,
+        content: message,
+        createdAt: new Date().toISOString(),
+      });
 
       // Save message to database
       const savedMessage = await prisma.message.create({
