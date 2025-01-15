@@ -15,4 +15,14 @@ type Message = {
     createdAt?: string;
 }
 
-export { Contact, Message }
+type ChatRequest = {
+    id: string;
+    senderId: string;
+    sender: Contact;
+    receiverId: string;
+    receiver: Contact;
+    status: PENDING | ACCEPTED | REJECTED;
+    createdAt: string;
+}
+
+export { Contact, Message, ChatRequest }

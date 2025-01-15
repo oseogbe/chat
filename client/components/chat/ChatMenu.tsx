@@ -5,9 +5,10 @@ import Image from "next/image";
 import { signOut } from "next-auth/react";
 
 import ChatListItem from "./ChatListItem";
-import ChatRequestModal from './ChatRequestModal';
+import ChatRequestSendModal from './ChatRequestSendModal';
+import ChatRequestsViewModal from './ChatRequestsViewModal';
 
-import { Search, LogOut, UserPlus } from "lucide-react";
+import { Search, LogOut, UserPlus, Bell } from "lucide-react";
 
 import { Contact } from '@/typings';
 
@@ -16,11 +17,16 @@ interface ChatMenuProps {
 }
 
 const ChatMenu: React.FC<ChatMenuProps> = ({ onSelectContact }) => {
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isChatRequestSendModalOpen, setChatRequestSendModalOpen] = useState(false);
+    const [isChatRequestsViewModalOpen, setChatRequestsViewModalOpen] = useState(false);
 
-    const toggleModal = () => {
-        setIsModalOpen(!isModalOpen);
+    const toggleChatRequestSendModal = () => {
+        setChatRequestSendModalOpen(!isChatRequestSendModalOpen);
     };
+
+    const toggleChatRequestsViewModal = () => {
+        setChatRequestsViewModalOpen(!isChatRequestsViewModalOpen);
+    }
 
     const handleLogout = () => {
         signOut({
@@ -37,8 +43,16 @@ const ChatMenu: React.FC<ChatMenuProps> = ({ onSelectContact }) => {
                     height={100}
                     alt='chat logo'
                 />
-                <UserPlus size={20} className='cursor-pointer' onClick={toggleModal} />
-                <ChatRequestModal isOpen={isModalOpen} onClose={toggleModal} />
+                <div className='flex items-center gap-x-3'>
+                    <UserPlus size={20} className='cursor-pointer' onClick={toggleChatRequestSendModal} />
+                    <ChatRequestSendModal isOpen={isChatRequestSendModalOpen} onClose={toggleChatRequestSendModal} />
+
+                    <div className='relative'>
+                        <Bell size={20} className='cursor-pointer' onClick={toggleChatRequestsViewModal} />
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#15CF74] absolute top-0 right-0.5"></div>
+                        <ChatRequestsViewModal isOpen={isChatRequestsViewModalOpen} onClose={toggleChatRequestsViewModal} />
+                    </div>
+                </div>
             </div>
             <div className="relative px-4">
                 <Search className="absolute top-2.5 left-7 h-5 w-5 text-[#707991]" />
