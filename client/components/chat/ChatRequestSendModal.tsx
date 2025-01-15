@@ -9,12 +9,12 @@ import { XIcon } from "lucide-react";
 
 import { Contact } from '@/typings';
 
-interface ChatRequestModalProps {
+interface ChatRequestSendModalProps {
     isOpen: boolean;
     onClose: () => void;
 }
 
-const ChatRequestModal: React.FC<ChatRequestModalProps> = ({ isOpen, onClose }) => {
+const ChatRequestSendModal: React.FC<ChatRequestSendModalProps> = ({ isOpen, onClose }) => {
     const { data: session } = useSession();
     const [searchQuery, setSearchQuery] = useState('');
     const [users, setUsers] = useState<Contact[]>([]);
@@ -68,16 +68,16 @@ const ChatRequestModal: React.FC<ChatRequestModalProps> = ({ isOpen, onClose }) 
     return (
         <div className="fixed inset-0 z-10 flex items-center justify-center bg-gray-800 bg-opacity-50">
             <div className="relative bg-white rounded-lg shadow-lg p-6 w-full max-w-md z-20">
-                <h2 className="text-2xl font-medium mb-4">Send Chat Request</h2>
+                <h2 className="text-xl font-medium mb-4">Chat Request</h2>
                 <XIcon size={20} className='cursor-pointer absolute top-3 right-3' onClick={onClose} />
                 <input
                     type="text"
                     placeholder="Search users..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded mb-4"
+                    className="w-full p-2 text-sm border border-gray-300 rounded"
                 />
-                <ul className="max-h-40 overflow-y-auto mb-4">
+                <ul className="max-h-[400px] overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 mb-4">
                     {users.map(user => (
                         <li
                             key={user.id}
@@ -85,7 +85,7 @@ const ChatRequestModal: React.FC<ChatRequestModalProps> = ({ isOpen, onClose }) 
                                 setSelectedUser(user);
                                 setSearchQuery(user.name);
                             }}
-                            className={`p-2 cursor-pointer ${selectedUser?.id === user.id ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'}`}
+                            className={`p-2 text-sm cursor-pointer ${selectedUser?.id === user.id ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'}`}
                         >
                             {user.name}
                         </li>
@@ -96,11 +96,11 @@ const ChatRequestModal: React.FC<ChatRequestModalProps> = ({ isOpen, onClose }) 
                     disabled={!selectedUser}
                     className="w-full bg-blue-500 text-white p-2 rounded disabled:opacity-50"
                 >
-                    Send Request
+                    Send
                 </button>
             </div>
         </div>
     );
 };
 
-export default ChatRequestModal;
+export default ChatRequestSendModal;
