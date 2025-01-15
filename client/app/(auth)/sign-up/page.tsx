@@ -1,19 +1,63 @@
 "use client";
 
-import { useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 
 import Ellipsis from '@/components/Loading';
-import { LockIcon, MailIcon, Phone, User2 } from 'lucide-react';
+import { Asterisk, EyeIcon, EyeOffIcon, LockIcon, MailIcon, Phone, User2 } from 'lucide-react';
 
 type SignUpSchema = {
     name: string
     email: string;
     password: string;
     phoneNumber: string;
+};
+
+const MaskedPasswordInput = ({ register, passwordError }: any) => {
+    const [showPassword, setShowPassword] = useState(false);
+    const [password, setPassword] = useState('');
+
+    const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setPassword(e.target.value);
+    };
+
+    return (
+        <div className="relative">
+            <LockIcon className="absolute top-3 left-3 h-5 w-5 text-gray-400" />
+            <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Password *"
+                className={`py-3 px-4 pl-10 block w-full border border-gray-200 rounded-lg ${!showPassword ? 'text-transparent selection:text-transparent' : 'text-[#6E80A4]'} text-sm focus:border-none focus:ring-0 focus:outline-[#6E80A4]`}
+                {...register('password', {
+                    required: 'Password is required',
+                    minLength: {
+                        value: 8,
+                        message: 'Password must be at least 8 characters long',
+                    },
+                })}
+                value={password}
+                onChange={handlePasswordChange}
+            />
+            <div className="absolute top-3.5 left-10 flex">
+                {!showPassword && password.split('').map((_, index) => (
+                    <Asterisk key={index} className="h-4 w-4 text-[#6E80A4]" />
+                ))}
+            </div>
+            <button
+                type="button"
+                className="absolute top-3 right-5 h-3 w-3 text-gray-400"
+                onClick={() => setShowPassword(!showPassword)}
+            >
+                {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+            </button>
+            {passwordError && (
+                <p className="text-xs text-red-500 mt-2">{passwordError.message}</p>
+            )}
+        </div>
+    );
 };
 
 const SignUp = () => {
@@ -42,7 +86,8 @@ const SignUp = () => {
                 }
 
                 toast.success('You can now sign in to your account', {
-                    className: 'xl:mt-8'
+                    className: 'xl:mt-8',
+                    duration: 2000
                 });
 
                 setTimeout(() => {
@@ -51,16 +96,19 @@ const SignUp = () => {
             } catch (error) {
                 if (error instanceof Error) {
                     toast.error(error.message, {
-                        className: 'xl:mt-8'
+                        className: 'xl:mt-8',
+                        duration: 2000
                     });
                 } else {
                     toast.error('An error occurred. Try again later!', {
-                        className: 'xl:mt-8'
+                        className: 'xl:mt-8',
+                        duration: 2000
                     });
                 }
             }
         });
     }
+
     return (
         <div className="min-h-screen w-full flex flex-col items-center justify-center p-8 bg-[#8BABD8]">
             <div
@@ -118,7 +166,7 @@ const SignUp = () => {
                                     })}
                                 />
                                 {errors.email && (
-                                    <p className="text-sm text-red-500 mt-2">{errors.name?.message}</p>
+                                    <p className="text-xs text-red-500 mt-2">{errors.name?.message}</p>
                                 )}
                             </div>
                             <div className="relative">
@@ -136,7 +184,7 @@ const SignUp = () => {
                                     })}
                                 />
                                 {errors.email && (
-                                    <p className="text-sm text-red-500 mt-2">{errors.email.message}</p>
+                                    <p className="text-xs text-red-500 mt-2">{errors.email.message}</p>
                                 )}
                             </div>
                             <div className="relative">
@@ -150,24 +198,11 @@ const SignUp = () => {
                                     })}
                                 />
                                 {errors.email && (
-                                    <p className="text-sm text-red-500 mt-2">{errors.phoneNumber?.message}</p>
+                                    <p className="text-xs text-red-500 mt-2">{errors.phoneNumber?.message}</p>
                                 )}
                             </div>
-                            <div className="relative">
-                                <LockIcon className="absolute top-3 left-3 h-5 w-5 text-gray-400" />
-                                <input
-                                    type="password"
-                                    placeholder="Password *"
-                                    className="py-3 px-4 pl-10 block w-full border border-gray-200 rounded-lg text-sm text-[#6E80A4] focus:border-none focus:ring-0 focus:outline-[#6E80A4]"
-                                    {...register('password', {
-                                        required: 'Password is required',
-                                    })}
-                                />
-                                {errors.password && (
-                                    <p className="text-sm text-red-500 mt-2">{errors.password.message}</p>
-                                )}
-                            </div>
-                            <button type="submit" className="w-full bg-[#6E80A4] rounded-md h-12 text-white font-medium">
+                            <MaskedPasswordInput register={register} passwordError={errors.password} />
+                            <button type="submit" className="w-full bg-[#6E80A4] rounded-md h-12 text-white font-medium" disabled={isPending}>
                                 {isPending ? <Ellipsis /> : 'Sign Up'}
                             </button>
                         </form>
