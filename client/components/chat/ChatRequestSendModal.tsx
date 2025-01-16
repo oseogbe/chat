@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSession } from "next-auth/react";
-import axios from 'axios';
 import toast from 'react-hot-toast';
+
+import apiClient from '@/lib/apiClient';
 
 import { XIcon } from "lucide-react";
 
@@ -23,7 +24,7 @@ const ChatRequestSendModal: React.FC<ChatRequestSendModalProps> = ({ isOpen, onC
     useEffect(() => {
         if (searchQuery) {
             const timeoutId = setTimeout(() => {
-                axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/user/search?query=${searchQuery}`, {
+                apiClient.get(`/api/v1/user/search?query=${searchQuery}`, {
                     headers: {
                         Authorization: `Bearer ${session?.user?.token}`
                     }
@@ -42,7 +43,7 @@ const ChatRequestSendModal: React.FC<ChatRequestSendModalProps> = ({ isOpen, onC
 
     const handleSendRequest = () => {
         if (selectedUser) {
-            axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/chat-request/send`, { receiverId: selectedUser.id }, {
+            apiClient.post('/api/v1/chat-request/send', { receiverId: selectedUser.id }, {
                 headers: {
                     Authorization: `Bearer ${session?.user?.token}`
                 }

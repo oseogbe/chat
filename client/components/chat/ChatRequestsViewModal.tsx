@@ -2,12 +2,12 @@
 
 import { useSession } from 'next-auth/react';
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import toast from 'react-hot-toast';
 
-import { XIcon } from 'lucide-react';
-
+import apiClient from '@/lib/apiClient';
 import { multiFormatDateString } from '@/lib/utils';
+
+import { XIcon } from 'lucide-react';
 
 import { ChatRequest } from '@/typings';
 
@@ -23,14 +23,12 @@ const ChatRequestsViewModal: React.FC<ChatRequestsViewModalProps> = ({ isOpen, o
     useEffect(() => {
         if (isOpen) {
             const fetchChatRequests = () => {
-                axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/chat-request/all`, {
+                apiClient.get('/api/v1/chat-request/all', {
                     headers: {
                         Authorization: `Bearer ${session?.user?.token}`
                     }
                 }).then(response => {
                     setChatRequests(response.data.data);
-                    console.log('chat requests', response.data.data);
-
                 }).catch(error => {
                     console.error(error);
                 });
@@ -42,7 +40,7 @@ const ChatRequestsViewModal: React.FC<ChatRequestsViewModalProps> = ({ isOpen, o
 
     const handleAccept = async (requestId: string) => {
         try {
-            await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/chat-request/update-status`, { requestId, status: 'ACCEPTED' }, {
+            await apiClient.post('/api/v1/chat-request/update-status', { requestId, status: 'ACCEPTED' }, {
                 headers: {
                     Authorization: `Bearer ${session?.user?.token}`
                 }
@@ -56,7 +54,7 @@ const ChatRequestsViewModal: React.FC<ChatRequestsViewModalProps> = ({ isOpen, o
 
     const handleReject = async (requestId: string) => {
         try {
-            await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/chat-request/update-status`, { requestId, status: 'REJECTED' }, {
+            await apiClient.post(`/api/v1/chat-request/update-status`, { requestId, status: 'REJECTED' }, {
                 headers: {
                     Authorization: `Bearer ${session?.user?.token}`
                 }

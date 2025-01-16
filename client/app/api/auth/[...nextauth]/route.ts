@@ -1,6 +1,7 @@
-import axios from "axios";
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+
+import apiClient from "@/lib/apiClient";
 
 type UserType = {
     id: string;
@@ -16,7 +17,7 @@ const providers = [
             password: { label: "Password", type: "password" }
         },
         async authorize(credentials: Record<"email" | "password", string> | undefined): Promise<UserType | null> {
-            const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/login`, {
+            const res = await apiClient.post('/api/v1/auth/login', {
                 email: credentials?.email,
                 password: credentials?.password,
             });
