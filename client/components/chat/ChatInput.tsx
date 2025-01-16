@@ -44,6 +44,12 @@ const ChatInput: React.FC<ChatInputProps> = ({ contact, onSendMessage }) => {
         }
     };
 
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter") {
+            handleSendMessage();
+        }
+    };
+
     return (
         <div className='absolute bottom-6 left-20 right-20'>
             <div className="relative">
@@ -51,6 +57,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ contact, onSendMessage }) => {
                     type='text'
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyDown={handleKeyDown}
                     className='h-14 pl-4 pr-16 bg-white w-full text-[#707991] focus:border-none focus:ring-0 focus:outline-[#6E80A4] rounded-xl'
                     placeholder='Message'
                 />
