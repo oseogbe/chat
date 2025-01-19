@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image"
 import { io, Socket } from "socket.io-client";
+import { useSocket } from '@/providers/SocketIOProvider';
 
 import { Contact } from "@/typings";
 
@@ -17,22 +18,14 @@ interface ChatInputProps {
 
 const ChatInput: React.FC<ChatInputProps> = ({ contact, onSendMessage }) => {
     const { data: session } = useSession();
+    const socket = useSocket();
 
     const [newMessage, setNewMessage] = useState<string>("");
 
-    useEffect(() => {
-        socket = io(process.env.NEXT_PUBLIC_API_URL);
-
-        return () => {
-            socket.disconnect();
-        };
-    }, []);
-
     const handleSendMessage = () => {
-        if (newMessage.trim()) {
-            // Emit message via Socket.IO
+        if (newMessage.trim() && socket) {
             socket.emit("private_message", {
-                senderId: session?.user?.id,
+                senderId: session?.user.id,
                 receiverId: contact.id,
                 message: newMessage,
             });

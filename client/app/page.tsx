@@ -1,7 +1,6 @@
 "use client"
 
-import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
+import { useState } from 'react';
 
 import Topbar from '@/components/chat/Topbar';
 import ChatMenu from '@/components/chat/ChatMenu';
@@ -10,27 +9,11 @@ import ChatInput from '@/components/chat/ChatInput';
 import ChatMessages from '@/components/chat/ChatMessages';
 
 import { Contact } from '@/typings';
-import { io, Socket } from 'socket.io-client';
-
-let socket: Socket;
 
 const Home = () => {
-  const { data: session } = useSession();
   const [isContactDetailsMenuOpen, setContactDetailsMenuOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact>();
   const [newMessage, setNewMessage] = useState<string>("");
-
-  useEffect(() => {
-    if (!session) return;
-
-    socket = io(process.env.NEXT_PUBLIC_API_URL);
-
-    socket.emit("join", session.user.id);
-
-    return () => {
-      socket.disconnect();
-    };
-  }, [session]);
 
   const openContactDetailsMenu = () => {
     setContactDetailsMenuOpen(true);

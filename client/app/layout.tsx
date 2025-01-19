@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import SessionProvider from "@/providers/SessionProvider";
 import { Toaster } from 'react-hot-toast';
+import SocketIOProvider from '@/providers/SocketIOProvider';
 
 export const metadata: Metadata = {
   title: "Chat",
@@ -19,8 +20,10 @@ export default function RootLayout({
         className={`antialiased`}
       >
         <SessionProvider>
-          {children}
-          <Toaster />
+          <SocketIOProvider>
+            {children}
+            <Toaster />
+          </SocketIOProvider>
         </SessionProvider>
       </body>
     </html>

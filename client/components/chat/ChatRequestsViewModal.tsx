@@ -2,6 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import React, { useEffect, useState } from 'react';
+import { useSocket } from '@/providers/SocketIOProvider';
 import toast from 'react-hot-toast';
 
 import apiClient from '@/lib/apiClient';
@@ -19,13 +20,14 @@ interface ChatRequestsViewModalProps {
 const ChatRequestsViewModal: React.FC<ChatRequestsViewModalProps> = ({ isOpen, onClose }) => {
     const { data: session } = useSession();
     const [chatRequests, setChatRequests] = useState<ChatRequest[]>([]);
+    const socket = useSocket();
 
     useEffect(() => {
         if (isOpen) {
             const fetchChatRequests = () => {
                 apiClient.get('/api/v1/chat-request/all', {
                     headers: {
-                        Authorization: `Bearer ${session?.user?.token}`
+                        Authorization: `Bearer ${session?.user.token}`
                     }
                 }).then(response => {
                     setChatRequests(response.data.data);
@@ -38,14 +40,18 @@ const ChatRequestsViewModal: React.FC<ChatRequestsViewModalProps> = ({ isOpen, o
         }
     }, [isOpen, session]);
 
-    const handleAccept = async (requestId: string) => {
+    const handleAccept = async (requestId: string, senderId: string) => {
         try {
             await apiClient.post('/api/v1/chat-request/update-status', { requestId, status: 'ACCEPTED' }, {
                 headers: {
-                    Authorization: `Bearer ${session?.user?.token}`
+                    Authorization: `Bearer ${session?.user.token}`
                 }
             });
             toast.success('Chat request accepted!');
+            socket?.emit('chat_request_accepted', {
+                receiverId: session?.user.id,
+                senderId
+            })
             onClose();
         } catch (error) {
             toast.error('Failed to accept chat request.');
@@ -56,7 +62,7 @@ const ChatRequestsViewModal: React.FC<ChatRequestsViewModalProps> = ({ isOpen, o
         try {
             await apiClient.post(`/api/v1/chat-request/update-status`, { requestId, status: 'REJECTED' }, {
                 headers: {
-                    Authorization: `Bearer ${session?.user?.token}`
+                    Authorization: `Bearer ${session?.user.token}`
                 }
             });
             toast.success('Chat request rejected!');
@@ -81,19 +87,19 @@ const ChatRequestsViewModal: React.FC<ChatRequestsViewModalProps> = ({ isOpen, o
                                 <div>
                                     <div className="text-sm text-[#262626]">
                                         {
-                                            request.senderId === session?.user?.id ?
+                                            request.senderId === session?.user.id ?
                                                 `You have sent a chat request to ${request.receiver.name}.` :
                                                 `You have received a chat request from ${request.sender.name}.`
                                         }
                                         {' '}
-                                        {request.status === 'PENDING' && request.senderId === session?.user?.id && <span className="text-yellow-500">[Pending]</span>}
+                                        {request.status === 'PENDING' && request.senderId === session?.user.id && <span className="text-yellow-500">[Pending]</span>}
                                         {request.status === 'REJECTED' && <span className="text-red-500">[Rejected]</span>}
                                         {request.status === 'ACCEPTED' && <span className="text-green-500">[Accepted]</span>}
                                     </div>
                                     <div className="text-sm text-[#8C8C8C] mt-[2px]">{multiFormatDateString(request.createdAt)}</div>
-                                    {request.status === 'PENDING' && request.senderId !== session?.user?.id && (
+                                    {request.status === 'PENDING' && request.senderId !== session?.user.id && (
                                         <div className="flex gap-x-3 mt-2">
-                                            <button onClick={() => handleAccept(request.id)} className="px-3 py-1.5 bg-[#15CF74] text-white text-xs rounded-[22px]">Accept</button>
+                                            <button onClick={() => handleAccept(request.id, request.senderId)} className="px-3 py-1.5 bg-[#15CF74] text-white text-xs rounded-[22px]">Accept</button>
                                             <button onClick={() => handleReject(request.id)} className="px-3 py-1.5 bg-[#FF4A4A] text-white text-xs rounded-[22px]">Reject</button>
                                         </div>
                                     )}

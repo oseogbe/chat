@@ -59,6 +59,13 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("user_connected", userId);
   });
 
+  // Handle chat request accepted
+  socket.on("chat_request_accepted", async ({ receiverId, senderId }) => {
+    // io.to(users.get(receiverId)).emit("refresh_contact_list");
+    // io.to(users.get(senderId)).emit("refresh_contact_list");
+    socket.broadcast.emit("refresh_contact_list", { receiverId, senderId });
+  });
+
   // Handle sending a message to a specific user
   socket.on("private_message", async ({ senderId, receiverId, message }) => {
     const receiverSocketId = users.get(receiverId);

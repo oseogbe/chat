@@ -2,13 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSession } from "next-auth/react";
-import axios from 'axios';
-import { io, Socket } from 'socket.io-client';
+import { useSocket } from '@/providers/SocketIOProvider';
 
+import apiClient from '@/lib/apiClient';
 import { getHourAndMinute, getInitials } from '@/lib/utils';
-import { Contact, Message } from '@/typings';
 
-let socket: Socket;
+import { Contact, Message } from '@/typings';
 
 interface ContactDetailsProps {
     onSelectContact: (contact: Contact) => void;
@@ -16,63 +15,69 @@ interface ContactDetailsProps {
 
 const ChatListItem: React.FC<ContactDetailsProps> = ({ onSelectContact }) => {
     const { data: session } = useSession();
+    const socket = useSocket();
     const [contacts, setContacts] = useState<Contact[]>([]);
     const [lastMessages, setLastMessages] = useState<{ [key: string]: Message }>({});
     const [connectedUsers, setConnectedUsers] = useState<Set<string>>(new Set());
 
     useEffect(() => {
-        if (session) {
-            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/user/get-contacts`, {
-                headers: {
-                    Authorization: `Bearer ${session?.user?.token}`
-                }
-            })
-                .then(response => {
-                    setContacts(response.data.data);
-                    response.data.data.forEach((contact: Contact) => {
-                        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/message/fetch?chatUserId=${contact.id}`, {
-                            headers: {
-                                Authorization: `Bearer ${session?.user?.token}`
-                            }
-                        })
-                            .then(response => {
-                                const messages = response.data.messages;
-                                if (messages.length > 0) {
-                                    setLastMessages(prevState => ({
-                                        ...prevState,
-                                        [contact.id]: messages[messages.length - 1]
-                                    }));
-                                }
-                            })
-                            .catch(error => console.error(error));
-                    });
-                })
-                .catch(error => console.error(error));
-        }
-    }, [session]);
+        if (session && socket) {
+            fetchContactsAndMessages();
 
-    useEffect(() => {
-        socket = io(process.env.NEXT_PUBLIC_API_URL);
-
-        // Listen for connected users
-        socket.on("user_connected", (userId) => {
-            setConnectedUsers((prev) => new Set([...prev, userId]));
-        });
-
-        // Listen for disconnected users
-        socket.on("user_disconnected", (userId) => {
-            setConnectedUsers((prev) => {
-                const newSet = new Set(prev);
-                newSet.delete(userId);
-                return newSet;
+            // Listen for connected users
+            socket.on("user_connected", (userId) => {
+                setConnectedUsers((prev) => new Set([...prev, userId]));
             });
-        });
 
-        // Clean up the socket connection on component unmount
-        return () => {
-            socket.disconnect();
-        };
-    }, [session]);
+            // Listen for disconnected users
+            socket.on("user_disconnected", (userId) => {
+                setConnectedUsers((prev) => {
+                    const newSet = new Set(prev);
+                    newSet.delete(userId);
+                    return newSet;
+                });
+            });
+
+            // Listen for refresh contact list event
+            socket.on("refresh_contact_list", ({ receiverId, senderId }) => {
+                if ([receiverId, senderId].includes(session?.user.id)) {
+                    fetchContactsAndMessages();
+                }
+            });
+        }
+    }, [session, socket]);
+
+    const fetchContactsAndMessages = async () => {
+        try {
+            const response = await apiClient.get('/api/v1/user/get-contacts', {
+                headers: {
+                    Authorization: `Bearer ${session?.user.token}`
+                }
+            });
+            setContacts(response.data.data);
+            response.data.data.forEach(async (contact: Contact) => {
+                try {
+                    // TODO: change to call an endpoint that only retrieves the last message
+                    const messageResponse = await apiClient.get(`/api/v1/message/fetch?chatUserId=${contact.id}`, {
+                        headers: {
+                            Authorization: `Bearer ${session?.user.token}`
+                        }
+                    });
+                    const messages = messageResponse.data.messages;
+                    if (messages.length > 0) {
+                        setLastMessages(prevState => ({
+                            ...prevState,
+                            [contact.id]: messages[messages.length - 1]
+                        }));
+                    }
+                } catch (error) {
+                    console.error(error);
+                }
+            });
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     return (
         <div>
