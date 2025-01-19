@@ -100,8 +100,8 @@ const SignIn = () => {
         <div className="min-h-screen w-full flex flex-col items-center justify-center p-8 bg-[#8BABD8]">
             <div
                 className="
-                    w-full 
-                    md:w-4/6 
+                    w-full
+                    sm:w-4/6 
                     lg:w-3/6 
                     xl:w-[520px]
                 "
